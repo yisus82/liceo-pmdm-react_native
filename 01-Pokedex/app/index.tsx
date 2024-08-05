@@ -1,5 +1,6 @@
 import List from "@/components/List";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useState } from "react";
 import { SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const POKEMON_DATA = {
@@ -90,20 +91,28 @@ const POKEMON_DATA = {
   ]
 };
 
-const HomeScreen = () =>
-  <SafeAreaView style={styles.container}>
-    <List items={POKEMON_DATA.results} />
-    <View style={styles.buttonContainer}>
-      <TouchableOpacity style={styles.button}>
-        <MaterialIcons name="navigate-before" size={24} color="black" />
-        <Text>Previous</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button}>
-        <Text>Next</Text>
-        <MaterialIcons name="navigate-next" size={24} color="black" />
-      </TouchableOpacity>
-    </View>
-  </SafeAreaView>;
+const HomeScreen = () => {
+  const [pokemon, setPokemon] = useState(POKEMON_DATA.results);
+
+  const isFirstPage = POKEMON_DATA.previous === null;
+  const isLastPage = POKEMON_DATA.next === null;
+
+  return (
+    <SafeAreaView style={styles.container}>
+      <List items={pokemon} />
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={isFirstPage ? { ...styles.button, ...styles.disabledButton } : styles.button} disabled={isFirstPage}>
+          <MaterialIcons name="navigate-before" size={24} color="black" />
+          <Text>Previous</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={isLastPage ? { ...styles.button, ...styles.disabledButton } : styles.button} disabled={isLastPage}>
+          <Text>Next</Text>
+          <MaterialIcons name="navigate-next" size={24} color="black" />
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -123,6 +132,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#f9c2ff",
     width: 100,
     borderRadius: 10,
+  },
+  disabledButton: {
+    opacity: 0.5,
   },
 });
 
