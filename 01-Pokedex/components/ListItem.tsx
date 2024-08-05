@@ -7,7 +7,7 @@ export type ListItemProps = {
 
 const ListItem: React.FC<ListItemProps> = (item) =>
   <View style={styles.item}>
-    <Text style={styles.text}>{item.name}</Text>
+    <Text style={styles.text}>{item.name.toUpperCase()}</Text>
   </View>;
 
 const styles = StyleSheet.create({
@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 32,
     textAlign: "center",
-  }
+  },
 });
 
 export default ListItem;
