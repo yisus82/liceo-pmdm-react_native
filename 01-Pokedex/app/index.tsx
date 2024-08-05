@@ -1,5 +1,6 @@
 import List from "@/components/List";
-import { SafeAreaView, StatusBar, StyleSheet } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
+import { SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 const POKEMON_DATA = {
   "count": 1302,
@@ -92,13 +93,37 @@ const POKEMON_DATA = {
 const HomeScreen = () =>
   <SafeAreaView style={styles.container}>
     <List items={POKEMON_DATA.results} />
+    <View style={styles.buttonContainer}>
+      <TouchableOpacity style={styles.button}>
+        <MaterialIcons name="navigate-before" size={24} color="black" />
+        <Text>Previous</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button}>
+        <Text>Next</Text>
+        <MaterialIcons name="navigate-next" size={24} color="black" />
+      </TouchableOpacity>
+    </View>
   </SafeAreaView>;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: StatusBar.currentHeight || 0,
-  }
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+  },
+  button: {
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 10,
+    marginVertical: 10,
+    backgroundColor: "#f9c2ff",
+    width: 100,
+    borderRadius: 10,
+  },
 });
 
 export default HomeScreen;
