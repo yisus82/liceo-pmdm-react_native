@@ -19,8 +19,8 @@ const HomeScreen = () => {
 
     setLoading(true);
     fetch(url)
-      .then((response) => response.json())
-      .then((data) => {
+      .then(response => response.json())
+      .then(data => {
         setPokemon(data.results);
         setNext(data.next);
         setPrevious(data.previous);
@@ -34,6 +34,14 @@ const HomeScreen = () => {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.loading}>Loading...</Text>
+      </SafeAreaView>
+    );
+  }
+
+  if (pokemon.length === 0) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={styles.error}>No Pokemon found</Text>
       </SafeAreaView>
     );
   }
@@ -88,6 +96,11 @@ const styles = StyleSheet.create({
   loading: {
     fontSize: 32,
     textAlign: "center",
+  },
+  error: {
+    fontSize: 32,
+    textAlign: "center",
+    color: "red",
   },
 });
 

@@ -11,7 +11,7 @@ const ListItem: React.FC<ListItemProps> = (item) => {
 
   return (
     <TouchableOpacity style={styles.item} onPress={() => router.push(`/${id}`)}>
-      <Text style={styles.text}>{item.name}</Text>
+      <Text style={styles.text}>{item.name.toUpperCase()}</Text>
     </TouchableOpacity>
   );
 };
