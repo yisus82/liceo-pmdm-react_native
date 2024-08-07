@@ -1,8 +1,9 @@
 import PokemonTypeIcons from "@/assets/icons";
 import Button from "@/components/Button";
-import { Link, router, useLocalSearchParams } from "expo-router";
+import { Audio } from "expo-av";
+import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
-import { Image, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { Alert, Image, Platform, SafeAreaView, ScrollView, StatusBar, StyleSheet, Text, View } from "react-native";
 
 type PokemonType = {
   slot: number,
@@ -34,6 +35,7 @@ const DetailsScreen = () => {
   const { id } = useLocalSearchParams();
   const [pokemonData, setPokemonData] = useState<Pokemon>();
   const [loading, setLoading] = useState(false);
+  const [audioSound, setAudioSound] = useState<Audio.Sound>();
 
   useEffect(() => {
     if (!id) {
@@ -48,60 +50,108 @@ const DetailsScreen = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
+  useEffect(() => {
+    return audioSound
+      ? () => {
+        audioSound.unloadAsync();
+      }
+      : undefined;
+  }, [audioSound]);
+
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.loading}>Loading...</Text>
-        <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>Go to home screen</Text>
-        </Link>
       </SafeAreaView>
     );
   }
+
+  const goHome = () => {
+    if (audioSound) {
+      audioSound.unloadAsync();
+    }
+    router.push("/");
+  };
 
   if (!pokemonData) {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.error}>Pokemon not found</Text>
-        <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>Go to home screen</Text>
-        </Link>
+        <Button
+          leftIcon="home"
+          text="Home"
+          onPress={goHome}
+        />
       </SafeAreaView>
     );
   }
 
   const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
+  const playAudio = async () => {
+    if (!pokemonData.cries.latest) {
+      return;
+    }
+
+    if (audioSound) {
+      await audioSound.unloadAsync();
+    }
+
+    const audioURL = pokemonData.cries.latest;
+    if (Platform.OS === "ios") {
+      await Audio.setAudioModeAsync({ playsInSilentModeIOS: true });
+      if (audioURL.endsWith(".ogg")) {
+        const { sound } = await Audio.Sound.createAsync(require("@/assets/audio/error.mp3"), { shouldPlay: true, volume: 1 });
+        setAudioSound(sound);
+        await sound.playAsync();
+        Alert.alert("Error", "iOS does not support .ogg files");
+        return;
+      }
+    }
+    const { sound } = await Audio.Sound.createAsync({ uri: audioURL }, { shouldPlay: true, volume: 1 });
+    setAudioSound(sound);
+    await sound.playAsync();
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.card}>
-        <Image
-          source={{ uri: pokemonData.sprites.other["official-artwork"].front_default }}
-          style={styles.image}
-        />
-        <Text style={[styles.largeText, styles.boldText]}>{capitalize(pokemonData.name)}</Text>
-        <View style={styles.dataContainer}>
-          <Text style={[styles.text, styles.boldText]}>Height:</Text>
-          <Text style={styles.text}>{pokemonData.height / 10} m.</Text>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={styles.card}>
+          <Image
+            source={{ uri: pokemonData.sprites.other["official-artwork"].front_default }}
+            style={styles.image}
+          />
+          <Text style={[styles.largeText, styles.boldText]}>{capitalize(pokemonData.name)}</Text>
+          <View style={styles.dataContainer}>
+            <Text style={[styles.text, styles.boldText]}>Height:</Text>
+            <Text style={styles.text}>{pokemonData.height / 10} m.</Text>
+          </View>
+          <View style={styles.dataContainer}>
+            <Text style={[styles.text, styles.boldText]}>Weight:</Text>
+            <Text style={styles.text}>{pokemonData.weight / 10} kg.</Text>
+          </View>
+          <View style={styles.typesContainer}>
+            {pokemonData.types.map(({ type }) => (
+              <Image
+                key={type.name}
+                source={PokemonTypeIcons[type.name]}
+              />
+            ))}
+          </View>
         </View>
-        <View style={styles.dataContainer}>
-          <Text style={[styles.text, styles.boldText]}>Weight:</Text>
-          <Text style={styles.text}>{pokemonData.weight / 10} kg.</Text>
+        <View style={styles.buttonContainer}>
+          <Button
+            leftIcon="play-arrow"
+            text="Play"
+            onPress={playAudio}
+          />
+          <Button
+            leftIcon="home"
+            text="Home"
+            onPress={goHome}
+          />
         </View>
-        <View style={styles.typesContainer}>
-          {pokemonData.types.map(({ type }) => (
-            <Image
-              key={type.name}
-              source={PokemonTypeIcons[type.name]}
-            />
-          ))}
-        </View>
-      </View>
-      <Button
-        leftIcon="home"
-        text="Home"
-        onPress={() => router.push("/")}
-      />
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -109,9 +159,13 @@ const DetailsScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    marginTop: StatusBar.currentHeight || 0,
+  },
+  scroll: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    gap: 30,
+    gap: 20,
   },
   loading: {
     fontSize: 32,
@@ -122,7 +176,8 @@ const styles = StyleSheet.create({
   },
   card: {
     alignItems: "center",
-    padding: 50,
+    paddingHorizontal: 50,
+    paddingVertical: 20,
     borderRadius: 20,
     backgroundColor: "#f9c2ff",
     gap: 20,
@@ -151,13 +206,10 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 10,
   },
-  link: {
-    marginTop: 15,
-    paddingVertical: 15,
-  },
-  linkText: {
-    fontSize: 14,
-    color: '#2e78b7',
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    gap: 50,
   },
 });
 

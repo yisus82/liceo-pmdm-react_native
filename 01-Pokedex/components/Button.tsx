@@ -1,5 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 type ButtonProps = {
   leftIcon?: typeof MaterialIcons.defaultProps.name,
@@ -10,11 +10,11 @@ type ButtonProps = {
 };
 
 const Button: React.FC<ButtonProps> = ({ leftIcon = "", text = "", rightIcon = "", disabled = false, onPress }) => (
-  <TouchableOpacity style={disabled ? { ...styles.button, ...styles.disabledButton } : styles.button} onPress={onPress} disabled={disabled}>
+  <Pressable style={disabled ? { ...styles.button, ...styles.disabledButton } : styles.button} onPress={onPress} disabled={disabled}>
     {leftIcon && <MaterialIcons name={leftIcon} size={24} color="black" />}
     <Text style={styles.text}>{text}</Text>
     {rightIcon && <MaterialIcons name={rightIcon} size={24} color="black" />}
-  </TouchableOpacity>
+  </Pressable>
 );
 
 const styles = StyleSheet.create({

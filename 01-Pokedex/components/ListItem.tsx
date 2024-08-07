@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import { StyleSheet, Text, TouchableOpacity } from "react-native";
+import { Pressable, StyleSheet, Text } from "react-native";
 
 export type ListItemProps = {
   name: string;
@@ -10,9 +10,9 @@ const ListItem: React.FC<ListItemProps> = (item) => {
   const id = item.url.split("/").at(-2) || "";
 
   return (
-    <TouchableOpacity style={styles.item} onPress={() => router.push(`/${id}`)}>
+    <Pressable style={styles.item} onPress={() => router.push(`/${id}`)}>
       <Text style={styles.text}>{item.name.toUpperCase()}</Text>
-    </TouchableOpacity>
+    </Pressable>
   );
 };
 
