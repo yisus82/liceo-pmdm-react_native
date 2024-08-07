@@ -12,7 +12,7 @@ const TabBarIcon = (props: TabBarIconProps) => <FontAwesome size={28} style={{ m
 const TabLayout = () =>
   <Tabs>
     <Tabs.Screen
-      name="index"
+      name="teams"
       options={{
         title: "Teams",
         tabBarIcon: ({ color }) => <TabBarIcon name="shield" color={color} />,
