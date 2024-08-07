@@ -1,7 +1,7 @@
+import Button from "@/components/Button";
 import List from "@/components/List";
-import { MaterialIcons } from "@expo/vector-icons";
 import { useEffect, useMemo, useState } from "react";
-import { SafeAreaView, StatusBar, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { SafeAreaView, StatusBar, StyleSheet, Text, View } from "react-native";
 
 const HomeScreen = () => {
   const [pokemon, setPokemon] = useState([]);
@@ -50,22 +50,18 @@ const HomeScreen = () => {
     <SafeAreaView style={styles.container}>
       <List items={pokemon} />
       <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={isFirstPage ? { ...styles.button, ...styles.disabledButton } : styles.button}
+        <Button
+          text="Previous"
+          leftIcon="navigate-before"
           disabled={isFirstPage}
           onPress={() => fetchPage(previous)}
-        >
-          <MaterialIcons name="navigate-before" size={24} color="black" />
-          <Text>Previous</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={isLastPage ? { ...styles.button, ...styles.disabledButton } : styles.button}
+        />
+        <Button
+          text="Next"
+          rightIcon="navigate-next"
           disabled={isLastPage}
           onPress={() => fetchPage(next)}
-        >
-          <Text>Next</Text>
-          <MaterialIcons name="navigate-next" size={24} color="black" />
-        </TouchableOpacity>
+        />
       </View>
     </SafeAreaView>
   );
@@ -79,19 +75,6 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-  },
-  button: {
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 10,
-    marginVertical: 10,
-    backgroundColor: "#f9c2ff",
-    width: 100,
-    borderRadius: 10,
-  },
-  disabledButton: {
-    opacity: 0.5,
   },
   loading: {
     fontSize: 32,

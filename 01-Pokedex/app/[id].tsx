@@ -1,5 +1,6 @@
 import PokemonTypeIcons from "@/assets/icons";
-import { Link, useLocalSearchParams } from "expo-router";
+import Button from "@/components/Button";
+import { Link, router, useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
 import { Image, SafeAreaView, StyleSheet, Text, View } from "react-native";
 
@@ -96,9 +97,11 @@ const DetailsScreen = () => {
           ))}
         </View>
       </View>
-      <Link href="/" style={styles.link}>
-        <Text style={styles.linkText}>Go to home screen</Text>
-      </Link>
+      <Button
+        leftIcon="home"
+        text="Home"
+        onPress={() => router.push("/")}
+      />
     </SafeAreaView>
   );
 };
