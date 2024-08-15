@@ -1,6 +1,7 @@
 import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
 import { zodResolver } from "@hookform/resolvers/zod";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router } from "expo-router";
 import { useForm } from "react-hook-form";
 import { Alert, StyleSheet, Text, View } from "react-native";
@@ -24,7 +25,7 @@ const RegisterScreen = () => {
     reValidateMode: "onBlur",
   });
 
-  const onSubmit = (formData: { email: string, password: string; confirmPassword: string; }) => {
+  const onSubmit = async (formData: { email: string, password: string; confirmPassword: string; }) => {
     if (formData.password !== formData.confirmPassword) {
       Alert.alert("Passwords do not match");
       return;
@@ -33,6 +34,7 @@ const RegisterScreen = () => {
     if (formData.email === "admin@liceolapaz.net") {
       Alert.alert("Account already exists");
     } else {
+      await AsyncStorage.setItem("userEmail", formData.email);
       router.push("/teams");
     }
   };
