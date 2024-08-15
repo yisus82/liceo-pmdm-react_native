@@ -9,30 +9,37 @@ import { z } from "zod";
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  confirmPassword: z.string().min(6, "Password must be at least 6 characters"),
 });
 
-const LoginScreen = () => {
+const RegisterScreen = () => {
   const { control, handleSubmit } = useForm({
     defaultValues: {
       email: "",
       password: "",
+      confirmPassword: "",
     },
     resolver: zodResolver(formSchema),
     mode: "onBlur",
     reValidateMode: "onBlur",
   });
 
-  const onSubmit = (formData: { email: string, password: string; }) => {
+  const onSubmit = (formData: { email: string, password: string; confirmPassword: string; }) => {
+    if (formData.password !== formData.confirmPassword) {
+      Alert.alert("Passwords do not match");
+      return;
+    }
+
     if (formData.email === "admin@liceolapaz.net") {
-      router.push("/teams");
+      Alert.alert("Account already exists");
     } else {
-      Alert.alert("Invalid credentials");
+      router.push("/teams");
     }
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Login</Text>
+      <Text style={styles.title}>Register</Text>
       <FormInput
         control={control}
         name="email"
@@ -49,8 +56,16 @@ const LoginScreen = () => {
         placeholder="Enter your password"
         secureTextEntry
       />
-      <Link href="/register" style={styles.link}>Don't have an account? Register here</Link>
-      <Button text="Login" onPress={handleSubmit(onSubmit)} />
+      <FormInput
+        control={control}
+        name="confirmPassword"
+        autoCapitalize="none"
+        inputMode="text"
+        placeholder="Confirm your password"
+        secureTextEntry
+      />
+      <Link href="/" style={styles.link}>Already have an account? Login here</Link>
+      <Button text="Register" onPress={handleSubmit(onSubmit)} />
     </View>
   );
 };
@@ -72,4 +87,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default LoginScreen;
+export default RegisterScreen;
