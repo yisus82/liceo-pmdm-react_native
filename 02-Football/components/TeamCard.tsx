@@ -9,7 +9,7 @@ type TeamCardProps = {
 };
 
 const TeamCard: React.FC<TeamCardProps> = ({ team, edit, remove }) => {
-  const logo = team.logo ? { uri: team.logo } : require("@/assets/images/logos/default-team-logo.png");
+  const logo = team.logo ? { uri: team.logo } : require("@/assets/images/default-team-logo.png");
 
   return (
     <View style={styles.container}>
