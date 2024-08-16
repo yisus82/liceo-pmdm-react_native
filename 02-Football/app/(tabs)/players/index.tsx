@@ -1,5 +1,6 @@
 import FilterBadge from "@/components/FilterBadge";
 import PlayerCard from "@/components/PlayerCard";
+import SearchBar from "@/components/SearchBar";
 import { initialPlayers } from "@/db/players";
 import { Player, PlayerPosition, PlayerPositionLabel } from "@/types/app";
 import { useEffect, useState } from "react";
@@ -21,6 +22,8 @@ const PlayersScreen = () => {
     { label: "FW", value: "Forward", active: false, onClick: () => toggleFilter("Forward") },
   ]);
   const [filteredPlayers, setFilteredPlayers] = useState<Player[]>(players);
+  const [searchString, setSearchString] = useState<string>("");
+  const [searchBarClicked, setSearchBarClicked] = useState<boolean>(false);
 
   const toggleFilter = (position: PlayerPosition) => {
     setFilters(previousFilters =>
@@ -31,13 +34,16 @@ const PlayersScreen = () => {
   };
 
   useEffect(() => {
+    const lowerCaseSearchString = searchString.toLowerCase();
+    const searchedPlayers = lowerCaseSearchString ? players.filter(player => player.name.toLowerCase().includes(lowerCaseSearchString)) : players;
+
     if (filters.every(filter => !filter.active)) {
-      setFilteredPlayers(players);
+      setFilteredPlayers(searchedPlayers);
       return;
     }
 
-    setFilteredPlayers(players.filter(player => filters.find(filter => filter.active && filter.value === player.position)));
-  }, [players, filters]);
+    setFilteredPlayers(searchedPlayers.filter(player => filters.find(filter => filter.active && filter.value === player.position)));
+  }, [players, filters, searchString]);
 
   const removePlayer = (player: Player) => {
     Alert.alert("Remove player", `Are you sure you want to remove ${player.name}?`, [
@@ -54,6 +60,13 @@ const PlayersScreen = () => {
 
   return (
     <>
+      <SearchBar
+        placeholder="Enter player name..."
+        clicked={searchBarClicked}
+        setClicked={setSearchBarClicked}
+        searchString={searchString}
+        setSearchString={setSearchString}
+      />
       <FlatList
         data={filters}
         keyExtractor={filter => filter.label}
@@ -67,6 +80,7 @@ const PlayersScreen = () => {
         )}
         contentContainerStyle={{
           marginHorizontal: "auto",
+          marginBottom: 20,
           gap: 20,
           paddingVertical: 10,
           height: 60,
