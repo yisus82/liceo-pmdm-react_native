@@ -13,6 +13,7 @@ export interface Team {
 }
 
 export type PlayerPosition = 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward';
+export type PlayerPositionLabel = 'GK' | 'DF' | 'MF' | 'FW';
 
 export interface Player {
   id: number;
