@@ -12,7 +12,12 @@ export interface Team {
   logo?: string;
 }
 
-declare module '*.png' {
-  const value: any;
-  export default value;
+export type PlayerPosition = 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward';
+
+export interface Player {
+  id: number;
+  name: string;
+  position: PlayerPosition;
+  teamId: number;
+  photo?: string;
 }
