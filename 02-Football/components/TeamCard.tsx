@@ -21,12 +21,21 @@ const TeamCard: React.FC<TeamCardProps> = ({ team, edit, remove }) => {
         <View style={styles.iconContainer}>
           <Pressable onPress={edit}>
             {({ pressed }) => (
-              <FontAwesome name="pencil" size={24} color={pressed ? "blue" : "black"} />
+              <FontAwesome
+                name="pencil"
+                size={25}
+                color="black"
+                style={{ opacity: pressed ? 0.5 : 1 }} />
             )}
           </Pressable>
           <Pressable onPress={remove}>
             {({ pressed }) => (
-              <FontAwesome name="trash" size={24} color={pressed ? "red" : "black"} />
+              <FontAwesome
+                name="trash"
+                size={25}
+                color="black"
+                style={{ opacity: pressed ? 0.5 : 1 }}
+              />
             )}
           </Pressable>
         </View>

@@ -101,7 +101,7 @@ const TeamsScreen = () => {
   return (
     <FlatList
       data={teams}
-      keyExtractor={(team) => team.id.toString()}
+      keyExtractor={team => team.id.toString()}
       renderItem={({ item }) => (
         <TeamCard
           team={item}
