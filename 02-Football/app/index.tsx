@@ -1,8 +1,10 @@
 import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
+import "@/firebaseConfig";
 import { zodResolver } from "@hookform/resolvers/zod";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router } from "expo-router";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useForm } from "react-hook-form";
 import { Alert, StyleSheet, Text, View } from "react-native";
 import { z } from "zod";
@@ -13,6 +15,8 @@ const formSchema = z.object({
 });
 
 const LoginScreen = () => {
+  const auth = getAuth();
+
   const { control, handleSubmit } = useForm({
     defaultValues: {
       email: "",
@@ -24,12 +28,17 @@ const LoginScreen = () => {
   });
 
   const onSubmit = async (formData: { email: string, password: string; }) => {
-    if (formData.email === "admin@liceolapaz.net") {
-      await AsyncStorage.setItem("userEmail", formData.email);
-      router.push("/teams");
-    } else {
-      Alert.alert("Invalid credentials");
-    }
+    signInWithEmailAndPassword(auth, formData.email, formData.password)
+      .then(async (userCredential) => {
+        const { email } = userCredential.user;
+        if (email) {
+          await AsyncStorage.setItem("userEmail", email);
+          router.push("/teams");
+        }
+      })
+      .catch(() => {
+        Alert.alert("Invalid credentials");
+      });
   };
 
   return (

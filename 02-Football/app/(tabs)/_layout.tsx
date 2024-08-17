@@ -1,6 +1,7 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Link, router, Tabs } from "expo-router";
+import { getAuth, signOut } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -49,10 +50,15 @@ const TabLayout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
       { text: "Cancel" },
       {
-        text: "Logout", onPress: async () => {
-          await AsyncStorage.removeItem("userEmail");
-          router.dismissAll();
-          router.push("/");
+        text: "Logout", onPress: () => {
+          const auth = getAuth();
+          signOut(auth).then(async () => {
+            await AsyncStorage.removeItem("userEmail");
+            router.dismissAll();
+            router.push("/");
+          }).catch(() => {
+            Alert.alert("Error during logout process");
+          });
         }
       },
     ]);
