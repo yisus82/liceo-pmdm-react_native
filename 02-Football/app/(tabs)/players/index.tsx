@@ -1,10 +1,10 @@
 import FilterBadge from "@/components/FilterBadge";
 import PlayerCard from "@/components/PlayerCard";
 import SearchBar from "@/components/SearchBar";
-import { initialPlayers } from "@/db/players";
-import { Player, PlayerPosition, PlayerPositionLabel } from "@/types/app";
+import { Player, PlayerPosition, PlayerPositionLabel, PlayerSnapshotData } from "@/types/app";
+import { collection, getDocs, getFirestore } from "firebase/firestore";
 import { useEffect, useState } from "react";
-import { Alert, FlatList } from "react-native";
+import { Alert, FlatList, StyleSheet, Text } from "react-native";
 
 type PlayerPositionFilter = {
   label: PlayerPositionLabel;
@@ -14,7 +14,8 @@ type PlayerPositionFilter = {
 };
 
 const PlayersScreen = () => {
-  const [players, setPlayers] = useState<Player[]>(initialPlayers);
+  const db = getFirestore();
+  const [players, setPlayers] = useState<Player[]>([]);
   const [filters, setFilters] = useState<PlayerPositionFilter[]>([
     { label: "GK", value: "Goalkeeper", active: false, onClick: () => toggleFilter("Goalkeeper") },
     { label: "DF", value: "Defender", active: false, onClick: () => toggleFilter("Defender") },
@@ -24,6 +25,7 @@ const PlayersScreen = () => {
   const [filteredPlayers, setFilteredPlayers] = useState<Player[]>(players);
   const [searchString, setSearchString] = useState<string>("");
   const [searchBarClicked, setSearchBarClicked] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const toggleFilter = (position: PlayerPosition) => {
     setFilters(previousFilters =>
@@ -32,6 +34,24 @@ const PlayersScreen = () => {
       )
     );
   };
+
+  const loadPlayers = () => {
+    setLoading(true);
+    getDocs(collection(db, "players"))
+      .then(querySnapshot => {
+        const queryPlayers: Player[] = [];
+        querySnapshot.forEach(async snapshot => {
+          const snapshotData = { ...snapshot.data() } as PlayerSnapshotData;
+          const player = { id: snapshot.id, ...snapshotData };
+          queryPlayers.push(player);
+        });
+        setPlayers(queryPlayers);
+      })
+      .catch(() => Alert.alert("Error loading players data"))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(loadPlayers, []);
 
   useEffect(() => {
     const lowerCaseSearchString = searchString.toLowerCase();
@@ -57,6 +77,10 @@ const PlayersScreen = () => {
       },
     ]);
   };
+
+  if (loading) {
+    <Text style={styles.text}>Loading...</Text>;
+  }
 
   return (
     <>
@@ -88,7 +112,7 @@ const PlayersScreen = () => {
       />
       <FlatList
         data={filteredPlayers}
-        keyExtractor={player => player.id.toString()}
+        keyExtractor={player => player.id}
         renderItem={({ item }) => (
           <PlayerCard
             player={item}
@@ -96,9 +120,20 @@ const PlayersScreen = () => {
             remove={() => removePlayer(item)}
           />
         )}
+        ListEmptyComponent={<Text style={styles.text}>No players found</Text>}
+        refreshing={loading}
+        onRefresh={loadPlayers}
       />
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  text: {
+    textAlign: "center",
+    fontSize: 32,
+    marginTop: 10,
+  },
+});
 
 export default PlayersScreen;

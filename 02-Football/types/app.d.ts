@@ -1,5 +1,5 @@
 export interface Team {
-  id: number;
+  id: string;
   name: string;
   location: {
     city: string;
@@ -12,13 +12,33 @@ export interface Team {
   logo?: string;
 }
 
+type TeamSnapshotData = {
+  name: string;
+  location: {
+    city: string;
+    country: string;
+  };
+  stadium: {
+    name: string;
+    capacity: number;
+  };
+  logo?: string;
+};
+
 export type PlayerPosition = 'Goalkeeper' | 'Defender' | 'Midfielder' | 'Forward';
 export type PlayerPositionLabel = 'GK' | 'DF' | 'MF' | 'FW';
 
 export interface Player {
-  id: number;
+  id: string;
   name: string;
   position: PlayerPosition;
-  teamId: number;
+  teamId?: string;
   photo?: string;
 }
+
+type PlayerSnapshotData = {
+  name: string;
+  position: PlayerPosition;
+  teamId?: string;
+  photo?: string;
+};

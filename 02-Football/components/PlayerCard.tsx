@@ -1,6 +1,7 @@
-import { getTeamById } from "@/db/teams";
-import { Player } from "@/types/app";
+import { Player, Team, TeamSnapshotData } from "@/types/app";
 import { FontAwesome } from "@expo/vector-icons";
+import { doc, getDoc, getFirestore } from "firebase/firestore";
+import { useEffect, useState } from "react";
 import { ImageBackground, Pressable, StyleSheet, Text, View } from "react-native";
 
 type PlayerCardProps = {
@@ -10,8 +11,28 @@ type PlayerCardProps = {
 };
 
 const PlayerCard: React.FC<PlayerCardProps> = ({ player, edit, remove }) => {
+  const db = getFirestore();
   const photo = player.photo ? { uri: player.photo } : require("@/assets/images/default-player-photo.png");
-  const team = getTeamById(player.teamId);
+  const [team, setTeam] = useState<Team>();
+
+  useEffect(() => {
+    if (!player.teamId) {
+      setTeam(undefined);
+      return;
+    }
+
+    getDoc(doc(db, "teams", player.teamId))
+      .then(snapshot => {
+        if (snapshot.exists()) {
+          const snapshotData = { ...snapshot.data() } as TeamSnapshotData;
+          const snapshotTeam = { id: snapshot.id, ...snapshotData };
+          setTeam(snapshotTeam);
+        } else {
+          setTeam(undefined);
+        }
+      })
+      .catch(() => setTeam(undefined));
+  }, [player.teamId]);
 
   return (
     <View style={styles.container}>
