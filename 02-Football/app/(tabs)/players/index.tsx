@@ -2,7 +2,7 @@ import FilterBadge from "@/components/FilterBadge";
 import PlayerCard from "@/components/PlayerCard";
 import SearchBar from "@/components/SearchBar";
 import { Player, PlayerPosition, PlayerPositionLabel, PlayerSnapshotData } from "@/types/app";
-import { collection, getDocs, getFirestore } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, getFirestore } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Alert, FlatList, StyleSheet, Text } from "react-native";
 
@@ -72,8 +72,11 @@ const PlayersScreen = () => {
         style: "cancel",
       },
       {
-        text: "OK",
-        onPress: () => setPlayers(players.filter(p => p.id !== player.id)),
+        text: "Remove",
+        onPress: () => {
+          deleteDoc(doc(db, "players", player.id));
+          loadPlayers();
+        },
       },
     ]);
   };

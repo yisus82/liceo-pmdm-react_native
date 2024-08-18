@@ -1,6 +1,6 @@
 import TeamCard from "@/components/TeamCard";
 import { Team, TeamSnapshotData } from "@/types/app";
-import { collection, getDocs, getFirestore } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDocs, getFirestore } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Alert, FlatList, StyleSheet, Text } from "react-native";
 
@@ -29,11 +29,16 @@ const TeamsScreen = () => {
 
   const removeTeam = (team: Team) => {
     Alert.alert("Remove team", `Are you sure you want to remove ${team.name}?`, [
-      { text: "Cancel" },
       {
-        text: "Remove", onPress: () => {
-          setTeams(previousTeams => previousTeams.filter(t => t.id !== team.id));
-        }
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Remove",
+        onPress: () => {
+          deleteDoc(doc(db, "teams", team.id));
+          loadTeams();
+        },
       },
     ]);
   };
