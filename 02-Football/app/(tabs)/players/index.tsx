@@ -2,6 +2,7 @@ import FilterBadge from "@/components/FilterBadge";
 import PlayerCard from "@/components/PlayerCard";
 import SearchBar from "@/components/SearchBar";
 import { Player, PlayerPosition, PlayerPositionLabel, PlayerSnapshotData } from "@/types/app";
+import { router } from "expo-router";
 import { collection, deleteDoc, doc, getDocs, getFirestore } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Alert, FlatList, StyleSheet, Text } from "react-native";
@@ -119,7 +120,14 @@ const PlayersScreen = () => {
         renderItem={({ item }) => (
           <PlayerCard
             player={item}
-            edit={() => console.log(`Editing ${item.name} (id: ${item.id})`)}
+            edit={() => {
+              router.push({
+                pathname: "./players/form",
+                params: {
+                  id: item.id,
+                },
+              });
+            }}
             remove={() => removePlayer(item)}
           />
         )}
