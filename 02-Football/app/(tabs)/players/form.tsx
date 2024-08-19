@@ -1,9 +1,9 @@
 import Button from "@/components/Button";
 import FormInput from "@/components/FormInput";
-import { PlayerSnapshotData } from "@/types/app";
+import { PlayerSnapshotData, Team, TeamSnapshotData } from "@/types/app";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router, useLocalSearchParams } from "expo-router";
-import { addDoc, collection, doc, getDoc, getFirestore, setDoc } from "firebase/firestore";
+import { addDoc, collection, doc, getDoc, getDocs, getFirestore, orderBy, query, setDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Alert, StyleSheet, Text, View } from "react-native";
@@ -12,7 +12,6 @@ import { z } from "zod";
 
 const formSchema = z.object({
   name: z.string().min(1),
-  teamId: z.string(),
   photo: z.string().url().or(z.literal("")),
 });
 
@@ -22,7 +21,6 @@ const PlayerFormScreen = () => {
   const { control, handleSubmit, setValue } = useForm({
     defaultValues: {
       name: "",
-      teamId: "",
       photo: "",
     },
     resolver: zodResolver(formSchema),
@@ -36,26 +34,43 @@ const PlayerFormScreen = () => {
     { label: "Forward (FK)", value: "Forward" },
   ];
   const [selectedPosition, setSelectedPosition] = useState("Goalkeeper");
+  const [teamData, setTeamData] = useState([{ label: "No team", value: "" }]);
+  const [selectedTeamId, setSelectedTeamId] = useState("");
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     if (!id) {
       return;
     }
 
+    setLoading(true);
     getDoc(doc(db, "players", `${id}`))
       .then(snapshot => {
         if (snapshot.exists()) {
           const snapshotData = { ...snapshot.data() } as PlayerSnapshotData;
           setValue("name", snapshotData.name);
           setSelectedPosition(snapshotData.position);
-          setValue("teamId", snapshotData.teamId ? snapshotData.teamId : "");
+          setSelectedTeamId(snapshotData.teamId ? snapshotData.teamId : "");
           setValue("photo", snapshotData.photo ? snapshotData.photo : "");
         }
       });
+    getDocs(query(collection(db, "teams"), orderBy("name")))
+      .then(querySnapshot => {
+        const queryTeams: Team[] = [];
+        querySnapshot.forEach(snapshot => {
+          const snapshotData = { ...snapshot.data() } as TeamSnapshotData;
+          const team = { id: snapshot.id, ...snapshotData };
+          queryTeams.push(team);
+        });
+        setTeamData([
+          { label: "No team", value: "" },
+          ...queryTeams.map(team => ({ label: team.name, value: team.id })),
+        ]);
+      }).finally(() => setLoading(false));
   }, [id]);
 
 
-  const onSubmit = async (formData: { name: string, teamId: string; photo: string; }) => {
+  const onSubmit = async (formData: { name: string, photo: string; }) => {
     if (!positionData.find(position => position.value === selectedPosition)) {
       Alert.alert("Please select a position");
       return;
@@ -64,7 +79,7 @@ const PlayerFormScreen = () => {
     const playerData = {
       name: formData.name,
       position: selectedPosition,
-      teamId: formData.teamId,
+      teamId: selectedTeamId,
       photo: formData.photo,
     };
 
@@ -75,6 +90,10 @@ const PlayerFormScreen = () => {
     }
     router.back();
   };
+
+  if (loading) {
+    return <Text style={styles.text}>Loading...</Text>;
+  }
 
   return (
     <View style={styles.container}>
@@ -100,12 +119,19 @@ const PlayerFormScreen = () => {
         value={selectedPosition}
         onChange={item => setSelectedPosition(item.value)}
       />
-      <FormInput
-        control={control}
-        name="teamId"
-        autoCapitalize="none"
-        inputMode="text"
-        placeholder="Enter team ID"
+      <Dropdown
+        style={styles.dropdown}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        inputSearchStyle={styles.inputSearchStyle}
+        data={teamData}
+        search
+        labelField="label"
+        valueField="value"
+        placeholder="Select team ID"
+        searchPlaceholder="Search..."
+        value={selectedTeamId}
+        onChange={item => setSelectedTeamId(item.value)}
       />
       <FormInput
         control={control}
@@ -123,6 +149,11 @@ const PlayerFormScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  text: {
+    textAlign: "center",
+    fontSize: 32,
+    marginTop: 10,
+  },
   container: {
     flex: 1,
     alignItems: "center",
