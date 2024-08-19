@@ -1,4 +1,4 @@
-import { Entypo, Feather } from "@expo/vector-icons";
+import { FontAwesome } from "@expo/vector-icons";
 import { Keyboard, StyleSheet, TextInput, View } from "react-native";
 
 type SearchBarProps = {
@@ -12,7 +12,7 @@ type SearchBarProps = {
 const SearchBar: React.FC<SearchBarProps> = ({ placeholder, clicked, setClicked, searchString, setSearchString }) =>
   <View style={styles.container}>
     <View style={styles.inputContainer}>
-      <Feather name="search" size={20} color="black" />
+      <FontAwesome name="search" size={20} color="black" />
       <TextInput
         style={styles.textInput}
         placeholder={placeholder}
@@ -28,8 +28,8 @@ const SearchBar: React.FC<SearchBarProps> = ({ placeholder, clicked, setClicked,
         placeholderTextColor="#888"
       />
       {clicked && (
-        <Entypo
-          name="cross"
+        <FontAwesome
+          name="remove"
           size={20}
           color="black"
           onPress={() => {
