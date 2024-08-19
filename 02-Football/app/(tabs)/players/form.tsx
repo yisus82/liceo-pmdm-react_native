@@ -4,14 +4,14 @@ import { PlayerSnapshotData } from "@/types/app";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { router, useLocalSearchParams } from "expo-router";
 import { addDoc, collection, doc, getDoc, getFirestore, setDoc } from "firebase/firestore";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
+import { Dropdown } from "react-native-element-dropdown";
 import { z } from "zod";
 
 const formSchema = z.object({
   name: z.string().min(1),
-  position: z.string().min(1),
   teamId: z.string(),
   photo: z.string().url().or(z.literal("")),
 });
@@ -19,11 +19,9 @@ const formSchema = z.object({
 const PlayerFormScreen = () => {
   const { id } = useLocalSearchParams();
   const db = getFirestore();
-
   const { control, handleSubmit, setValue } = useForm({
     defaultValues: {
       name: "",
-      position: "",
       teamId: "",
       photo: "",
     },
@@ -31,6 +29,13 @@ const PlayerFormScreen = () => {
     mode: "onBlur",
     reValidateMode: "onBlur",
   });
+  const positionData = [
+    { label: "Goalkeeper (GK)", value: "Goalkeeper" },
+    { label: "Defender (DF)", value: "Defender" },
+    { label: "Midfielder (MF)", value: "Midfielder" },
+    { label: "Forward (FK)", value: "Forward" },
+  ];
+  const [selectedPosition, setSelectedPosition] = useState("Goalkeeper");
 
   useEffect(() => {
     if (!id) {
@@ -42,7 +47,7 @@ const PlayerFormScreen = () => {
         if (snapshot.exists()) {
           const snapshotData = { ...snapshot.data() } as PlayerSnapshotData;
           setValue("name", snapshotData.name);
-          setValue("position", snapshotData.position);
+          setSelectedPosition(snapshotData.position);
           setValue("teamId", snapshotData.teamId ? snapshotData.teamId : "");
           setValue("photo", snapshotData.photo ? snapshotData.photo : "");
         }
@@ -50,10 +55,15 @@ const PlayerFormScreen = () => {
   }, [id]);
 
 
-  const onSubmit = async (formData: { name: string, position: string; teamId: string; photo: string; }) => {
+  const onSubmit = async (formData: { name: string, teamId: string; photo: string; }) => {
+    if (!positionData.find(position => position.value === selectedPosition)) {
+      Alert.alert("Please select a position");
+      return;
+    }
+
     const playerData = {
       name: formData.name,
-      position: formData.position,
+      position: selectedPosition,
       teamId: formData.teamId,
       photo: formData.photo,
     };
@@ -76,12 +86,19 @@ const PlayerFormScreen = () => {
         inputMode="text"
         placeholder="Enter name"
       />
-      <FormInput
-        control={control}
-        name="position"
-        autoCapitalize="words"
-        inputMode="text"
-        placeholder="Enter city"
+      <Dropdown
+        style={styles.dropdown}
+        placeholderStyle={styles.placeholderStyle}
+        selectedTextStyle={styles.selectedTextStyle}
+        inputSearchStyle={styles.inputSearchStyle}
+        data={positionData}
+        search
+        labelField="label"
+        valueField="value"
+        placeholder="Select position"
+        searchPlaceholder="Search..."
+        value={selectedPosition}
+        onChange={item => setSelectedPosition(item.value)}
       />
       <FormInput
         control={control}
@@ -116,6 +133,24 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 20,
     fontWeight: "bold",
+  },
+  dropdown: {
+    alignSelf: "stretch",
+    borderWidth: 1,
+    borderColor: "black",
+    padding: 10,
+    borderRadius: 10,
+  },
+  placeholderStyle: {
+    fontSize: 16,
+    color: "#ccc",
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+  },
+  inputSearchStyle: {
+    height: 40,
+    fontSize: 16,
   },
   buttonContainer: {
     flexDirection: "row",
