@@ -82,7 +82,7 @@ const PlayersScreen = () => {
   };
 
   if (loading) {
-    <Text style={styles.text}>Loading...</Text>;
+    return <Text style={styles.text}>Loading...</Text>;
   }
 
   return (

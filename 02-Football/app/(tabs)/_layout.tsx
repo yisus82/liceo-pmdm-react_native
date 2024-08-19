@@ -1,6 +1,6 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Link, router, Tabs } from "expo-router";
+import { Href, Link, router, Tabs, usePathname } from "expo-router";
 import { getAuth, signOut } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
@@ -15,6 +15,7 @@ const TabBarIcon = (props: TabBarIconProps) => <FontAwesome size={28} style={{ m
 const TabLayout = () => {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [loadingUser, setLoadingUser] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const getUserEmail = async () => {
@@ -48,9 +49,13 @@ const TabLayout = () => {
 
   const logout = () => {
     Alert.alert("Logout", "Are you sure you want to logout?", [
-      { text: "Cancel" },
       {
-        text: "Logout", onPress: () => {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        onPress: () => {
           const auth = getAuth();
           signOut(auth).then(async () => {
             await AsyncStorage.removeItem("userEmail");
@@ -59,10 +64,17 @@ const TabLayout = () => {
           }).catch(() => {
             Alert.alert("Error during logout process");
           });
-        }
+        },
       },
     ]);
   };
+
+  const goToForm = () => {
+    const path = `${pathname}/form` as Href;
+    router.push(path);
+  };
+
+  const validPathname = () => pathname === "/teams" || pathname === "/players";
 
   return (
     <Tabs>
@@ -83,7 +95,7 @@ const TabLayout = () => {
               )}
             </Pressable>,
           headerRight: () =>
-            <Pressable>
+            validPathname() && <Pressable onPress={goToForm}>
               {({ pressed }) => (
                 <FontAwesome
                   name="plus-circle"
@@ -112,7 +124,7 @@ const TabLayout = () => {
               )}
             </Pressable>,
           headerRight: () =>
-            <Pressable>
+            validPathname() && <Pressable onPress={goToForm}>
               {({ pressed }) => (
                 <FontAwesome
                   name="plus-circle"

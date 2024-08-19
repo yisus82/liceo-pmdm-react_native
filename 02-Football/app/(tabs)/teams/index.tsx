@@ -1,5 +1,6 @@
 import TeamCard from "@/components/TeamCard";
 import { Team, TeamSnapshotData } from "@/types/app";
+import { router } from "expo-router";
 import { collection, deleteDoc, doc, getDocs, getFirestore } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { Alert, FlatList, StyleSheet, Text } from "react-native";
@@ -44,7 +45,7 @@ const TeamsScreen = () => {
   };
 
   if (loading) {
-    <Text style={styles.text}>Loading...</Text>;
+    return <Text style={styles.text}>Loading...</Text>;
   }
 
   return (
@@ -54,7 +55,14 @@ const TeamsScreen = () => {
       renderItem={({ item }) => (
         <TeamCard
           team={item}
-          edit={() => console.log(`Editing ${item.name} (id: ${item.id})`)}
+          edit={() => {
+            router.push({
+              pathname: "./teams/form",
+              params: {
+                id: item.id,
+              },
+            });
+          }}
           remove={() => removeTeam(item)}
         />
       )}
