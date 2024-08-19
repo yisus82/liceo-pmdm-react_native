@@ -39,21 +39,7 @@ const PlayerFormScreen = () => {
   const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!id) {
-      return;
-    }
-
     setLoading(true);
-    getDoc(doc(db, "players", `${id}`))
-      .then(snapshot => {
-        if (snapshot.exists()) {
-          const snapshotData = { ...snapshot.data() } as PlayerSnapshotData;
-          setValue("name", snapshotData.name);
-          setSelectedPosition(snapshotData.position);
-          setSelectedTeamId(snapshotData.teamId ? snapshotData.teamId : "");
-          setValue("photo", snapshotData.photo ? snapshotData.photo : "");
-        }
-      });
     getDocs(query(collection(db, "teams"), orderBy("name")))
       .then(querySnapshot => {
         const queryTeams: Team[] = [];
@@ -66,7 +52,22 @@ const PlayerFormScreen = () => {
           { label: "No team", value: "" },
           ...queryTeams.map(team => ({ label: team.name, value: team.id })),
         ]);
-      }).finally(() => setLoading(false));
+      });
+
+    if (!id) {
+      setLoading(false);
+    } else {
+      getDoc(doc(db, "players", `${id}`))
+        .then(snapshot => {
+          if (snapshot.exists()) {
+            const snapshotData = { ...snapshot.data() } as PlayerSnapshotData;
+            setValue("name", snapshotData.name);
+            setSelectedPosition(snapshotData.position);
+            setSelectedTeamId(snapshotData.teamId ? snapshotData.teamId : "");
+            setValue("photo", snapshotData.photo ? snapshotData.photo : "");
+          }
+        }).finally(() => setLoading(false));
+    }
   }, [id]);
 
 
