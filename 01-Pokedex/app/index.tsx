@@ -33,16 +33,14 @@ const Index = () => {
     fetch(url)
       .then(request => request.json())
       .then((data: PokemonDataType) => {
-        setNext(data.next ? `${BASE_URL}?offset=${offset + 20}&limit=20` : data.next);
-        setPrevious(data.previous ? `${BASE_URL}?offset=${offset - 20}&limit=20` : data.previous);
+        setNext(data.next ? `${BASE_URL}?offset=${offset + 20}&limit=${LIMIT}` : data.next);
+        setPrevious(data.previous ? `${BASE_URL}?offset=${offset - 20}&limit=${LIMIT}` : data.previous);
         setResults(data.results);
       })
       .finally(() => setLoading(false));
   };
 
   useEffect(() => fetchUrl(`${BASE_URL}?offset=${offset}&limit=20`), []);
-
-  console.log({ previous, next, offset });
 
   if (loading) {
     return (
