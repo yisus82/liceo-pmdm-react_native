@@ -1,66 +1,86 @@
-import Button from "@/components/Button";
-import List from "@/components/List";
-import { useEffect, useMemo, useState } from "react";
-import { SafeAreaView, StatusBar, StyleSheet, Text, View } from "react-native";
+import Button from '@/components/Button';
+import List from '@/components/List';
+import { ListItemProps } from '@/components/ListItem';
+import { useEffect, useMemo, useState } from 'react';
+import { StatusBar, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-const HomeScreen = () => {
-  const [pokemon, setPokemon] = useState([]);
-  const [next, setNext] = useState(null);
-  const [previous, setPrevious] = useState(null);
+type PokemonDataType = {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: ListItemProps[];
+};
+
+const BASE_URL = 'https://pokeapi.co/api/v2/pokemon';
+const LIMIT = 20;
+
+const Index = () => {
+  const [next, setNext] = useState<string | null>(null);
+  const [previous, setPrevious] = useState<string | null>(null);
+  const [results, setResults] = useState<ListItemProps[]>([]);
   const [loading, setLoading] = useState(false);
+  const [offset, setOffset] = useState(0);
 
   const isFirstPage = useMemo(() => previous === null, [previous]);
   const isLastPage = useMemo(() => next === null, [next]);
 
-  const fetchPage = (url: string | null) => {
-    if (!url) {
+  const fetchUrl = (url: string | null) => {
+    if (url === null) {
       return;
     }
-
     setLoading(true);
     fetch(url)
-      .then(response => response.json())
-      .then(data => {
-        setPokemon(data.results);
-        setNext(data.next);
-        setPrevious(data.previous);
+      .then(request => request.json())
+      .then((data: PokemonDataType) => {
+        setNext(data.next ? `${BASE_URL}?offset=${offset + 20}&limit=20` : data.next);
+        setPrevious(data.previous ? `${BASE_URL}?offset=${offset - 20}&limit=20` : data.previous);
+        setResults(data.results);
       })
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => fetchPage("https://pokeapi.co/api/v2/pokemon?offset=0&limit=20"), []);
+  useEffect(() => fetchUrl(`${BASE_URL}?offset=${offset}&limit=20`), []);
+
+  console.log({ previous, next, offset });
 
   if (loading) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.loading}>Loading...</Text>
+        <Text style={styles.text}>Loading...</Text>
       </SafeAreaView>
     );
   }
 
-  if (pokemon.length === 0) {
+  if (results.length === 0) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={styles.error}>No Pokemon found</Text>
+        <Text style={styles.text}>No Pokémon found</Text>
       </SafeAreaView>
     );
   }
 
   return (
     <SafeAreaView style={styles.container}>
-      <List items={pokemon} />
+      <List items={results} />
       <View style={styles.buttonContainer}>
         <Button
-          text="Previous"
-          leftIcon="navigate-before"
+          leftIcon='chevron-left'
+          text='Previous'
+          onPress={() => {
+            fetchUrl(previous);
+            setOffset(offset - 20);
+          }}
           disabled={isFirstPage}
-          onPress={() => fetchPage(previous)}
         />
         <Button
-          text="Next"
-          rightIcon="navigate-next"
+          rightIcon='chevron-right'
+          text='Next'
+          onPress={() => {
+            fetchUrl(next);
+            setOffset(offset + 20);
+          }}
           disabled={isLastPage}
-          onPress={() => fetchPage(next)}
         />
       </View>
     </SafeAreaView>
@@ -71,20 +91,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     marginTop: StatusBar.currentHeight || 0,
+    justifyContent: 'center',
   },
   buttonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    flexDirection: 'row',
+    justifyContent: 'space-around',
   },
-  loading: {
+  text: {
     fontSize: 32,
-    textAlign: "center",
-  },
-  error: {
-    fontSize: 32,
-    textAlign: "center",
-    color: "red",
+    textAlign: 'center',
   },
 });
 
-export default HomeScreen;
+export default Index;
